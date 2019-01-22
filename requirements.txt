@@ -1,3 +1,5 @@
 PyJWT
 pylint
+pytest
+tox
 yapf
