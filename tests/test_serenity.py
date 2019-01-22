@@ -110,3 +110,69 @@ class TestSerenity:
                 data={
                     'securityToken': security_token,
                 })
+
+    def test_list_cities(self):
+        test_token = 'test'
+        security_token = 'SECURITY TOKEN'
+        instance = Serenity(test_token)
+        with pytest.raises(Exception):
+            instance.list_cities()
+
+        instance.security_token = security_token
+        with patch('requests.get') as mock_get:
+            mock_get.return_value = Mock(ok=True)
+            mock_get.return_value.json.return_value = {'success': False}
+            with pytest.raises(Exception):
+                instance.list_cities()
+
+        with patch('requests.get') as mock_get:
+            mock_get.return_value = Mock(ok=True)
+            # yapf: disable
+            mock_get.return_value.json.return_value = {
+                'success': True,
+                'message': 'List of activities',
+                'data': {
+                    'cities': [{
+                        '_id': '5c05156e8c27c400597066ea',
+                        'name': 'Ozan'
+                    },
+                    {
+                        '_id': '5c05156e8c27c4005970670a',
+                        'name': 'Marchamp'
+                    }],
+                    'page': 1,
+                    'total_count': 36691,
+                    'total_page': 1224
+                }
+            }
+            # yapf: enable
+            ret = instance.list_cities()
+            mock_get.assert_called_once_with(
+                DEV_URL + '/v1/public/city/list/1/50/0',
+                headers={'Content-Type': CONTENT_TYPE},
+                data={
+                    'securityToken': security_token,
+                })
+        assert ret == [{
+            '_id': '5c05156e8c27c400597066ea',
+            'name': 'Ozan'
+        }, {
+            '_id': '5c05156e8c27c4005970670a',
+            'name': 'Marchamp'
+        }]
+
+        with patch('requests.get') as mock_get:
+            mock_get.return_value = Mock(ok=True)
+            mock_get.return_value.json.return_value = {
+                'success': True,
+                'data': {
+                    'cities': []
+                }
+            }
+            instance.list_cities(page=3, limit=10, full=True)
+            mock_get.assert_called_once_with(
+                DEV_URL + '/v1/public/city/list/3/10/1',
+                headers={'Content-Type': CONTENT_TYPE},
+                data={
+                    'securityToken': security_token,
+                })

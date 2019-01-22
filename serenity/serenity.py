@@ -45,3 +45,20 @@ class Serenity:
         if not data['success']:
             raise Exception
         return data['data']['activityGroups']
+
+    def list_cities(self, page=1, limit=50, full=False):
+        if not self.security_token:
+            raise AttributeError
+        payload = {
+            'securityToken': self.security_token,
+        }
+        headers = {'Content-Type': CONTENT_TYPE}
+        url = self.url + '/v1/public/city/list/{page}/{limit}/{full}'.format(
+            page=page,
+            limit=limit,
+            full=1 if full else 0,
+        )
+        data = requests.get(url, headers=headers, data=payload).json()
+        if not data['success']:
+            raise Exception
+        return data['data']['cities']
