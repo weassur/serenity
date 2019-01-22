@@ -13,3 +13,8 @@ class TestSerenity:
 
         with pytest.raises(TypeError):
             instance = Serenity(foo='bar')  #pylint: disable=E1120
+
+    def test_authenticate(self):
+        test_token = 'test'
+        instance = Serenity(test_token)
+        assert instance.authenticate()
