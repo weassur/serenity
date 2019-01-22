@@ -1,5 +1,8 @@
+codecov
+coverage
 PyJWT
 pylint
 pytest
+pytest-cov
 tox
 yapf
