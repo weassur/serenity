@@ -8,8 +8,13 @@ Python client for the serenity api
 # Tests
 
 intall requirements.txt
+
 `pip install -r requirements.txt`
+
 run tests
+
 `py.tests`
+
 watch for changes
+
 `ptw -- --testmon`
