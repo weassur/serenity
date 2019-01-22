@@ -4,5 +4,7 @@ PyJWT
 pylint
 pytest
 pytest-cov
+pytest-testmon
+pytest-watch
 tox
 yapf
