@@ -87,20 +87,31 @@ class TestSerenity:
                 data={
                     'securityToken': security_token,
                 })
-        assert ret == [{
-            '_id': '5c05162c87e1930064f65d61',
-            'name': 'Construction - Extension'
-        }, {
-            '_id': '5c05162d87e1930064f65d7d',
-            'name': 'Devis divers'
-        }]
+        # yapf: disable
+        assert ret == {
+            'page': 1,
+            'total_count': 34,
+            'total_page': 2,
+            'has_next': True,
+            'activities': [{
+                '_id': '5c05162c87e1930064f65d61',
+                'name': 'Construction - Extension'
+            }, {
+                '_id': '5c05162d87e1930064f65d7d',
+                'name': 'Devis divers'
+            }]
+        }
+        # yapf: enable
 
         with patch('requests.get') as mock_get:
             mock_get.return_value = Mock(ok=True)
             mock_get.return_value.json.return_value = {
                 'success': True,
                 'data': {
-                    'activityGroups': []
+                    'activityGroups': [],
+                    'page': 1,
+                    'total_count': 34,
+                    'total_page': 2
                 }
             }
             instance.list_activities(page=3, limit=10, full=True)
@@ -153,20 +164,32 @@ class TestSerenity:
                 data={
                     'securityToken': security_token,
                 })
-        assert ret == [{
-            '_id': '5c05156e8c27c400597066ea',
-            'name': 'Ozan'
-        }, {
-            '_id': '5c05156e8c27c4005970670a',
-            'name': 'Marchamp'
-        }]
+        # yapf: disable
+        assert ret == {
+            'page': 1,
+            'total_count': 36691,
+            'total_page': 1224,
+            'has_next': True,
+            'cities': [{
+                '_id': '5c05156e8c27c400597066ea',
+                'name': 'Ozan'
+            },
+            {
+                '_id': '5c05156e8c27c4005970670a',
+                'name': 'Marchamp'
+            }]
+        }
+        # yapf: enable
 
         with patch('requests.get') as mock_get:
             mock_get.return_value = Mock(ok=True)
             mock_get.return_value.json.return_value = {
                 'success': True,
                 'data': {
-                    'cities': []
+                    'cities': [],
+                    'page': 1,
+                    'total_count': 36691,
+                    'total_page': 1224
                 }
             }
             instance.list_cities(page=3, limit=10, full=True)

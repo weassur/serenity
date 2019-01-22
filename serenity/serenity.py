@@ -44,7 +44,13 @@ class Serenity:
         data = requests.get(url, headers=headers, data=payload).json()
         if not data['success']:
             raise Exception
-        return data['data']['activityGroups']
+        response = data['data']
+        # consistent naming
+        activities = response['activityGroups']
+        response['activities'] = activities
+        del response['activityGroups']
+        response['has_next'] = page < response['total_page']
+        return response
 
     def list_cities(self, page=1, limit=50, full=False):
         if not self.security_token:
@@ -61,4 +67,6 @@ class Serenity:
         data = requests.get(url, headers=headers, data=payload).json()
         if not data['success']:
             raise Exception
-        return data['data']['cities']
+        response = data['data']
+        response['has_next'] = page < response['total_page']
+        return response
