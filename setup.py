@@ -9,5 +9,5 @@ setup(
     author_email='thibaut@weassur.com',
     license='GPL 3.0',
     packages=['serenity'],
-    install_requires=['PyJWT'],
+    install_requires=['PyJWT', 'requests'],
     zip_safe=False)
