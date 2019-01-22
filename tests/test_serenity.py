@@ -199,3 +199,77 @@ class TestSerenity:
                 data={
                     'securityToken': security_token,
                 })
+
+    def test_search_cities(self):
+        test_token = 'test'
+        security_token = 'SECURITY TOKEN'
+        instance = Serenity(test_token)
+        with pytest.raises(Exception):
+            instance.search_cities('')
+
+        instance.security_token = security_token
+        with patch('requests.get') as mock_get:
+            mock_get.return_value = Mock(ok=True)
+            mock_get.return_value.json.return_value = {'success': False}
+            with pytest.raises(Exception):
+                instance.search_cities()  #pylint: disable=E1120
+
+        with patch('requests.get') as mock_get:
+            mock_get.return_value = Mock(ok=True)
+            # yapf: disable
+            mock_get.return_value.json.return_value = {
+                'success': True,
+                'message': 'List of activities',
+                'data': {
+                    'cities': [{
+                        '_id': '5c0515838c27c400597074c0',
+                        'name': 'Aix-en-Othe'
+                    },
+                    {
+                        '_id': '5c0516148c27c4005970ee6d',
+                        'name': 'Aixe-sur-Vienne'
+                    }],
+                    'total_count': 12,
+                    'total_page': 1
+                }
+            }
+            # yapf: enable
+            ret = instance.search_cities('aix')
+            mock_get.assert_called_once_with(
+                DEV_URL + '/v1/public/city/getFromRegex/aix/50/0',
+                headers={'Content-Type': CONTENT_TYPE},
+                data={
+                    'securityToken': security_token,
+                })
+        # yapf: disable
+        assert ret == {
+            'total_count': 12,
+            'total_page': 1,
+            'cities': [{
+                '_id': '5c0515838c27c400597074c0',
+                'name': 'Aix-en-Othe'
+            },
+            {
+                '_id': '5c0516148c27c4005970ee6d',
+                'name': 'Aixe-sur-Vienne'
+            }]
+        }
+        # yapf: enable
+
+        with patch('requests.get') as mock_get:
+            mock_get.return_value = Mock(ok=True)
+            mock_get.return_value.json.return_value = {
+                'success': True,
+                'data': {
+                    'cities': [],
+                    'total_count': 12,
+                    'total_page': 1
+                }
+            }
+            instance.search_cities('paris', limit=10, full=True)
+            mock_get.assert_called_once_with(
+                DEV_URL + '/v1/public/city/getFromRegex/paris/1/10',
+                headers={'Content-Type': CONTENT_TYPE},
+                data={
+                    'securityToken': security_token,
+                })

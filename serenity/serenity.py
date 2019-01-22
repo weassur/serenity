@@ -70,3 +70,21 @@ class Serenity:
         response = data['data']
         response['has_next'] = page < response['total_page']
         return response
+
+    def search_cities(self, keyword, limit=50, full=False):
+        if not self.security_token:
+            raise AttributeError
+        payload = {
+            'securityToken': self.security_token,
+        }
+        headers = {'Content-Type': CONTENT_TYPE}
+        url = self.url + '/v1/public/city/getFromRegex/{keyword}/{full}/{limit}'.format(
+            keyword=keyword,
+            full=1 if full else 0,
+            limit=limit,
+        )
+        data = requests.get(url, headers=headers, data=payload).json()
+        if not data['success']:
+            raise Exception
+        response = data['data']
+        return response
