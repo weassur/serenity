@@ -1,7 +1,7 @@
 import requests
 from datetime import datetime, timedelta
 
-DEV_URL = 'https://api-dev.serenityhome.fr/'
+DEV_URL = 'http://api-dev.serenityhome.fr/'
 PROD_URL = 'https://api-dev.serenityhome.fr/'
 
 CONTENT_TYPE = 'application/x-www-form-urlencoded'
