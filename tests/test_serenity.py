@@ -1,4 +1,5 @@
 import pytest
+from datetime import datetime, timedelta
 from serenity.serenity import Serenity, DEV_URL, PROD_URL, CONTENT_TYPE
 from unittest.mock import Mock, patch
 
@@ -40,10 +41,25 @@ class TestSerenity:
                 })
         assert ret
         assert instance.security_token == 'FAKE SECURITY TOKEN'
+        assert instance.authentication_ts is not None
+        assert instance._check_authentication()
 
         instance.anonymous_token = None
         with pytest.raises(AttributeError):
             instance.authenticate()
+
+    def test_check_authentication(self):
+        test_token = 'test'
+        instance = Serenity(test_token)
+        with pytest.raises(AttributeError):
+            instance._check_authentication()
+
+        with patch.object(Serenity, 'authenticate') as mock_authenticate:
+            mock_authenticate.return_value = True
+            instance.security_token = 'FAKE SECURITY TOKEN'
+            instance.authentication_ts = datetime.now() - timedelta(hours=4)
+            assert instance._check_authentication()
+            mock_authenticate.assert_called_once()
 
     def test_list_activities(self):
         test_token = 'test'
@@ -53,6 +69,7 @@ class TestSerenity:
             instance.list_activities()
 
         instance.security_token = security_token
+        instance.authentication_ts = datetime.now()
         with patch('requests.get') as mock_get:
             mock_get.return_value = Mock(ok=True)
             mock_get.return_value.json.return_value = {'success': False}
@@ -130,6 +147,7 @@ class TestSerenity:
             instance.list_cities()
 
         instance.security_token = security_token
+        instance.authentication_ts = datetime.now()
         with patch('requests.get') as mock_get:
             mock_get.return_value = Mock(ok=True)
             mock_get.return_value.json.return_value = {'success': False}
@@ -208,6 +226,7 @@ class TestSerenity:
             instance.search_cities('')
 
         instance.security_token = security_token
+        instance.authentication_ts = datetime.now()
         with patch('requests.get') as mock_get:
             mock_get.return_value = Mock(ok=True)
             mock_get.return_value.json.return_value = {'success': False}
@@ -236,7 +255,7 @@ class TestSerenity:
             # yapf: enable
             ret = instance.search_cities('aix')
             mock_get.assert_called_once_with(
-                DEV_URL + '/v1/public/city/getFromRegex/aix/50/0',
+                DEV_URL + '/v1/public/city/getFromRegex/aix/0/50',
                 headers={'Content-Type': CONTENT_TYPE},
                 data={
                     'securityToken': security_token,

@@ -1,9 +1,11 @@
 import requests
+from datetime import datetime, timedelta
 
 DEV_URL = 'https://api-dev.serenityhome.fr/'
 PROD_URL = 'https://api-dev.serenityhome.fr/'
 
 CONTENT_TYPE = 'application/x-www-form-urlencoded'
+TOKEN_VALIDITY = timedelta(hours=3)
 
 
 class Serenity:
@@ -27,11 +29,18 @@ class Serenity:
         if not data['success']:
             raise Exception
         self.security_token = data['token']
+        self.authentication_ts = datetime.now()
+        return True
+
+    def _check_authentication(self):
+        if not self.security_token or not self.authentication_ts:
+            raise AttributeError
+        if datetime.now() > self.authentication_ts + TOKEN_VALIDITY:
+            self.authenticate()
         return True
 
     def list_activities(self, page=1, limit=50, full=False):
-        if not self.security_token:
-            raise AttributeError
+        self._check_authentication()
         payload = {
             'securityToken': self.security_token,
         }
@@ -53,8 +62,7 @@ class Serenity:
         return response
 
     def list_cities(self, page=1, limit=50, full=False):
-        if not self.security_token:
-            raise AttributeError
+        self._check_authentication()
         payload = {
             'securityToken': self.security_token,
         }
@@ -72,8 +80,7 @@ class Serenity:
         return response
 
     def search_cities(self, keyword, limit=50, full=False):
-        if not self.security_token:
-            raise AttributeError
+        self._check_authentication()
         payload = {
             'securityToken': self.security_token,
         }
