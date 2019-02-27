@@ -1,5 +1,6 @@
 import requests
 from datetime import datetime, timedelta
+from serenity.utils import to_camel_case
 
 DEV_URL = 'http://api-dev.serenityhome.fr/'
 PROD_URL = 'https://api-dev.serenityhome.fr/'
@@ -15,19 +16,21 @@ class Serenity:
         if production:
             self.url = PROD_URL
 
+    def _get_headers(self):
+        return {
+            'Content-Type': CONTENT_TYPE,
+            'Authorization':
+            'Bearer {token}'.format(token=self.anonymous_token)
+        }
+
     def authenticate(self):
         if not self.anonymous_token:
             raise AttributeError
-        payload = {
-            'anonymousToken': self.anonymous_token,
-        }
-        headers = {'Content-Type': CONTENT_TYPE}
         data = requests.post(
             self.url + '/authenticate/anonymous',
-            headers=headers,
-            data=payload).json()
+            headers=self._get_headers()).json()
         if not data['success']:
-            raise Exception
+            raise Exception(data.get('message'))
         self.security_token = data['token']
         self.authentication_ts = datetime.now()
         return True
@@ -41,18 +44,16 @@ class Serenity:
 
     def list_activities(self, page=1, limit=50, full=False):
         self._check_authentication()
-        payload = {
-            'securityToken': self.security_token,
+        url = self.url + '/v1/public/activityGroup/list'
+        params = {
+            'page': page,
+            'limit': limit,
+            'full': 1 if full else 0,
         }
-        headers = {'Content-Type': CONTENT_TYPE}
-        url = self.url + '/v1/public/activityGroup/list/{page}/{limit}/{full}'.format(
-            page=page,
-            limit=limit,
-            full=1 if full else 0,
-        )
-        data = requests.get(url, headers=headers, data=payload).json()
+        data = requests.get(
+            url, headers=self._get_headers(), params=params).json()
         if not data['success']:
-            raise Exception
+            raise Exception(data.get('message'))
         response = data['data']
         # consistent naming
         activities = response['activityGroups']
@@ -63,35 +64,59 @@ class Serenity:
 
     def list_cities(self, page=1, limit=50, full=False):
         self._check_authentication()
-        payload = {
-            'securityToken': self.security_token,
+        url = self.url + '/v1/public/city/list'
+        params = {
+            'page': page,
+            'limit': limit,
+            'full': 1 if full else 0,
         }
-        headers = {'Content-Type': CONTENT_TYPE}
-        url = self.url + '/v1/public/city/list/{page}/{limit}/{full}'.format(
-            page=page,
-            limit=limit,
-            full=1 if full else 0,
-        )
-        data = requests.get(url, headers=headers, data=payload).json()
+        data = requests.get(
+            url, headers=self._get_headers(), params=params).json()
         if not data['success']:
-            raise Exception
+            raise Exception(data.get('message'))
         response = data['data']
         response['has_next'] = page < response['total_page']
         return response
 
     def search_cities(self, keyword, limit=50, full=False):
         self._check_authentication()
-        payload = {
-            'securityToken': self.security_token,
+        url = self.url + '/v1/public/city/getFromRegex'
+        params = {
+            'keyword': keyword,
+            'limit': limit,
+            'full': 1 if full else 0,
         }
-        headers = {'Content-Type': CONTENT_TYPE}
-        url = self.url + '/v1/public/city/getFromRegex/{keyword}/{full}/{limit}'.format(
-            keyword=keyword,
-            full=1 if full else 0,
-            limit=limit,
-        )
-        data = requests.get(url, headers=headers, data=payload).json()
+        data = requests.get(
+            url, headers=self._get_headers(), params=params).json()
         if not data['success']:
-            raise Exception
+            raise Exception(data.get('message'))
+        response = data['data']
+        return response
+
+    def create_token(self, **kwargs):
+        self._check_authentication()
+        url = self.url + '/v1/public/funnel/insurer/project/update/token'
+        params = {to_camel_case(key): value for key, value in kwargs.items()}
+        data = requests.post(
+            url, headers=self._get_headers(), params=params).json()
+        if not data['success']:
+            raise Exception(data.get('message'))
+        token = data['data']['token']
+        return token
+
+    def create_project(self, token):
+        if not token:
+            raise Exception(
+                'token is required, you need to create a token first with create_token'
+            )
+        self._check_authentication()
+        url = self.url + '/v1/public/funnel/insurer/project/save'
+        params = {
+            'dataToken': token,
+        }
+        data = requests.post(
+            url, headers=self._get_headers(), params=params).json()
+        if not data['success']:
+            raise Exception(data.get('message'))
         response = data['data']
         return response

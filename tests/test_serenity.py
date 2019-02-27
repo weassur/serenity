@@ -1,6 +1,7 @@
 import pytest
 from datetime import datetime, timedelta
 from serenity.serenity import Serenity, DEV_URL, PROD_URL, CONTENT_TYPE
+from serenity.utils import to_camel_case
 from unittest.mock import Mock, patch
 
 
@@ -35,10 +36,11 @@ class TestSerenity:
             ret = instance.authenticate()
             mock_post.assert_called_once_with(
                 DEV_URL + '/authenticate/anonymous',
-                headers={'Content-Type': CONTENT_TYPE},
-                data={
-                    'anonymousToken': test_token,
-                })
+                headers={
+                    'Content-Type': CONTENT_TYPE,
+                    'Authorization': 'Bearer {token}'.format(token=test_token)
+                },
+            )
         assert ret
         assert instance.security_token == 'FAKE SECURITY TOKEN'
         assert instance.authentication_ts is not None
@@ -99,10 +101,15 @@ class TestSerenity:
             # yapf: enable
             ret = instance.list_activities()
             mock_get.assert_called_once_with(
-                DEV_URL + '/v1/public/activityGroup/list/1/50/0',
-                headers={'Content-Type': CONTENT_TYPE},
-                data={
-                    'securityToken': security_token,
+                DEV_URL + '/v1/public/activityGroup/list',
+                headers={
+                    'Content-Type': CONTENT_TYPE,
+                    'Authorization': 'Bearer {token}'.format(token=test_token)
+                },
+                params={
+                    'page': 1,
+                    'limit': 50,
+                    'full': 0,
                 })
         # yapf: disable
         assert ret == {
@@ -133,10 +140,15 @@ class TestSerenity:
             }
             instance.list_activities(page=3, limit=10, full=True)
             mock_get.assert_called_once_with(
-                DEV_URL + '/v1/public/activityGroup/list/3/10/1',
-                headers={'Content-Type': CONTENT_TYPE},
-                data={
-                    'securityToken': security_token,
+                DEV_URL + '/v1/public/activityGroup/list',
+                headers={
+                    'Content-Type': CONTENT_TYPE,
+                    'Authorization': 'Bearer {token}'.format(token=test_token)
+                },
+                params={
+                    'page': 3,
+                    'limit': 10,
+                    'full': 1,
                 })
 
     def test_list_cities(self):
@@ -177,10 +189,15 @@ class TestSerenity:
             # yapf: enable
             ret = instance.list_cities()
             mock_get.assert_called_once_with(
-                DEV_URL + '/v1/public/city/list/1/50/0',
-                headers={'Content-Type': CONTENT_TYPE},
-                data={
-                    'securityToken': security_token,
+                DEV_URL + '/v1/public/city/list',
+                headers={
+                    'Content-Type': CONTENT_TYPE,
+                    'Authorization': 'Bearer {token}'.format(token=test_token)
+                },
+                params={
+                    'page': 1,
+                    'limit': 50,
+                    'full': 0,
                 })
         # yapf: disable
         assert ret == {
@@ -212,10 +229,15 @@ class TestSerenity:
             }
             instance.list_cities(page=3, limit=10, full=True)
             mock_get.assert_called_once_with(
-                DEV_URL + '/v1/public/city/list/3/10/1',
-                headers={'Content-Type': CONTENT_TYPE},
-                data={
-                    'securityToken': security_token,
+                DEV_URL + '/v1/public/city/list',
+                headers={
+                    'Content-Type': CONTENT_TYPE,
+                    'Authorization': 'Bearer {token}'.format(token=test_token)
+                },
+                params={
+                    'page': 3,
+                    'limit': 10,
+                    'full': 1,
                 })
 
     def test_search_cities(self):
@@ -255,10 +277,15 @@ class TestSerenity:
             # yapf: enable
             ret = instance.search_cities('aix')
             mock_get.assert_called_once_with(
-                DEV_URL + '/v1/public/city/getFromRegex/aix/0/50',
-                headers={'Content-Type': CONTENT_TYPE},
-                data={
-                    'securityToken': security_token,
+                DEV_URL + '/v1/public/city/getFromRegex',
+                headers={
+                    'Content-Type': CONTENT_TYPE,
+                    'Authorization': 'Bearer {token}'.format(token=test_token)
+                },
+                params={
+                    'keyword': 'aix',
+                    'full': 0,
+                    'limit': 50,
                 })
         # yapf: disable
         assert ret == {
@@ -287,8 +314,86 @@ class TestSerenity:
             }
             instance.search_cities('paris', limit=10, full=True)
             mock_get.assert_called_once_with(
-                DEV_URL + '/v1/public/city/getFromRegex/paris/1/10',
-                headers={'Content-Type': CONTENT_TYPE},
-                data={
-                    'securityToken': security_token,
+                DEV_URL + '/v1/public/city/getFromRegex',
+                headers={
+                    'Content-Type': CONTENT_TYPE,
+                    'Authorization': 'Bearer {token}'.format(token=test_token)
+                },
+                params={
+                    'keyword': 'paris',
+                    'full': 1,
+                    'limit': 10,
                 })
+
+    def test_create_token(self):
+        test_token = 'test'
+        security_token = 'SECURITY TOKEN'
+        instance = Serenity(test_token)
+        instance.security_token = security_token
+        instance.authentication_ts = datetime.now()
+        with patch('requests.post') as mock_post:
+            mock_post.return_value = Mock(ok=True)
+            # yapf: disable
+            mock_post.return_value.json.return_value = {
+                'success': True,
+                'message': 'Data token successfully updated',
+                'data': {
+                    'token': 'fakejwt',
+                }
+            }
+            # yapf: enable
+            params = {
+                'insurer_email': 'fake@em.ail',
+                'selected_activity_groups': ['id1', 'id2'],
+                'insurer_phone_number': '+33688778877',
+            }
+            camel_cased_params = {
+                to_camel_case(key): value
+                for key, value in params.items()
+            }
+            ret = instance.create_token(**params)
+            mock_post.assert_called_once_with(
+                DEV_URL + '/v1/public/funnel/insurer/project/update/token',
+                headers={
+                    'Content-Type': CONTENT_TYPE,
+                    'Authorization': 'Bearer {token}'.format(token=test_token)
+                },
+                params=camel_cased_params)
+            assert ret == 'fakejwt'
+
+    def test_create_project(self):
+        test_token = 'test'
+        security_token = 'SECURITY TOKEN'
+        instance = Serenity(test_token)
+        instance.security_token = security_token
+        instance.authentication_ts = datetime.now()
+
+        with pytest.raises(Exception):
+            instance.create_project()  #pylint: disable=E1120
+
+        with patch('requests.post') as mock_post:
+            mock_post.return_value = Mock(ok=True)
+            fake_token = 'fakejwt'
+            # yapf: disable
+            mock_post.return_value.json.return_value = {
+                'success': True,
+                'message': 'Project successfully saved from token',
+                'data': {
+                    'token': fake_token,
+                    'project': {},
+                }
+            }
+            # yapf: enable
+            params = {'dataToken': fake_token}
+            ret = instance.create_project(fake_token)
+            mock_post.assert_called_once_with(
+                DEV_URL + '/v1/public/funnel/insurer/project/save',
+                headers={
+                    'Content-Type': CONTENT_TYPE,
+                    'Authorization': 'Bearer {token}'.format(token=test_token)
+                },
+                params=params)
+            assert ret == {
+                'token': fake_token,
+                'project': {},
+            }
