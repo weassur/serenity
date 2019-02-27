@@ -338,7 +338,7 @@ class TestSerenity:
                 'success': True,
                 'message': 'Data token successfully updated',
                 'data': {
-                    'token': {'fake': 'jwt'},
+                    'token': 'fakejwt',
                 }
             }
             # yapf: enable
@@ -359,4 +359,41 @@ class TestSerenity:
                     'Authorization': 'Bearer {token}'.format(token=test_token)
                 },
                 params=camel_cased_params)
-            assert ret == {'fake': 'jwt'}
+            assert ret == 'fakejwt'
+
+    def test_create_project(self):
+        test_token = 'test'
+        security_token = 'SECURITY TOKEN'
+        instance = Serenity(test_token)
+        instance.security_token = security_token
+        instance.authentication_ts = datetime.now()
+
+        with pytest.raises(Exception):
+            instance.create_project()  #pylint: disable=E1120
+
+        with patch('requests.post') as mock_post:
+            mock_post.return_value = Mock(ok=True)
+            fake_token = 'fakejwt'
+            # yapf: disable
+            mock_post.return_value.json.return_value = {
+                'success': True,
+                'message': 'Project successfully saved from token',
+                'data': {
+                    'token': fake_token,
+                    'project': {},
+                }
+            }
+            # yapf: enable
+            params = {'dataToken': fake_token}
+            ret = instance.create_project(fake_token)
+            mock_post.assert_called_once_with(
+                DEV_URL + '/v1/public/funnel/insurer/project/save',
+                headers={
+                    'Content-Type': CONTENT_TYPE,
+                    'Authorization': 'Bearer {token}'.format(token=test_token)
+                },
+                params=params)
+            assert ret == {
+                'token': fake_token,
+                'project': {},
+            }

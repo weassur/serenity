@@ -30,7 +30,7 @@ class Serenity:
             self.url + '/authenticate/anonymous',
             headers=self._get_headers()).json()
         if not data['success']:
-            raise Exception
+            raise Exception(data.get('message'))
         self.security_token = data['token']
         self.authentication_ts = datetime.now()
         return True
@@ -53,7 +53,7 @@ class Serenity:
         data = requests.get(
             url, headers=self._get_headers(), params=params).json()
         if not data['success']:
-            raise Exception
+            raise Exception(data.get('message'))
         response = data['data']
         # consistent naming
         activities = response['activityGroups']
@@ -73,7 +73,7 @@ class Serenity:
         data = requests.get(
             url, headers=self._get_headers(), params=params).json()
         if not data['success']:
-            raise Exception
+            raise Exception(data.get('message'))
         response = data['data']
         response['has_next'] = page < response['total_page']
         return response
@@ -89,7 +89,7 @@ class Serenity:
         data = requests.get(
             url, headers=self._get_headers(), params=params).json()
         if not data['success']:
-            raise Exception
+            raise Exception(data.get('message'))
         response = data['data']
         return response
 
@@ -100,6 +100,23 @@ class Serenity:
         data = requests.post(
             url, headers=self._get_headers(), params=params).json()
         if not data['success']:
-            raise Exception
+            raise Exception(data.get('message'))
         token = data['data']['token']
         return token
+
+    def create_project(self, token):
+        if not token:
+            raise Exception(
+                'token is required, you need to create a token first with create_token'
+            )
+        self._check_authentication()
+        url = self.url + '/v1/public/funnel/insurer/project/save'
+        params = {
+            'dataToken': token,
+        }
+        data = requests.post(
+            url, headers=self._get_headers(), params=params).json()
+        if not data['success']:
+            raise Exception(data.get('message'))
+        response = data['data']
+        return response
