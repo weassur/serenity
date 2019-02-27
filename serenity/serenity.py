@@ -15,17 +15,19 @@ class Serenity:
         if production:
             self.url = PROD_URL
 
+    def _get_headers(self):
+        return {
+            'Content-Type': CONTENT_TYPE,
+            'Authorization':
+            'Bearer {token}'.format(token=self.anonymous_token)
+        }
+
     def authenticate(self):
         if not self.anonymous_token:
             raise AttributeError
-        payload = {
-            'anonymousToken': self.anonymous_token,
-        }
-        headers = {'Content-Type': CONTENT_TYPE}
         data = requests.post(
             self.url + '/authenticate/anonymous',
-            headers=headers,
-            data=payload).json()
+            headers=self._get_headers()).json()
         if not data['success']:
             raise Exception
         self.security_token = data['token']
@@ -41,16 +43,14 @@ class Serenity:
 
     def list_activities(self, page=1, limit=50, full=False):
         self._check_authentication()
-        payload = {
-            'securityToken': self.security_token,
+        url = self.url + '/v1/public/activityGroup/list'
+        params = {
+            'page': page,
+            'limit': limit,
+            'full': 1 if full else 0,
         }
-        headers = {'Content-Type': CONTENT_TYPE}
-        url = self.url + '/v1/public/activityGroup/list/{page}/{limit}/{full}'.format(
-            page=page,
-            limit=limit,
-            full=1 if full else 0,
-        )
-        data = requests.get(url, headers=headers, data=payload).json()
+        data = requests.get(
+            url, headers=self._get_headers(), params=params).json()
         if not data['success']:
             raise Exception
         response = data['data']
@@ -63,16 +63,14 @@ class Serenity:
 
     def list_cities(self, page=1, limit=50, full=False):
         self._check_authentication()
-        payload = {
-            'securityToken': self.security_token,
+        url = self.url + '/v1/public/city/list'
+        params = {
+            'page': page,
+            'limit': limit,
+            'full': 1 if full else 0,
         }
-        headers = {'Content-Type': CONTENT_TYPE}
-        url = self.url + '/v1/public/city/list/{page}/{limit}/{full}'.format(
-            page=page,
-            limit=limit,
-            full=1 if full else 0,
-        )
-        data = requests.get(url, headers=headers, data=payload).json()
+        data = requests.get(
+            url, headers=self._get_headers(), params=params).json()
         if not data['success']:
             raise Exception
         response = data['data']
@@ -81,16 +79,14 @@ class Serenity:
 
     def search_cities(self, keyword, limit=50, full=False):
         self._check_authentication()
-        payload = {
-            'securityToken': self.security_token,
+        url = self.url + '/v1/public/city/getFromRegex'
+        params = {
+            'keyword': keyword,
+            'limit': limit,
+            'full': 1 if full else 0,
         }
-        headers = {'Content-Type': CONTENT_TYPE}
-        url = self.url + '/v1/public/city/getFromRegex/{keyword}/{full}/{limit}'.format(
-            keyword=keyword,
-            full=1 if full else 0,
-            limit=limit,
-        )
-        data = requests.get(url, headers=headers, data=payload).json()
+        data = requests.get(
+            url, headers=self._get_headers(), params=params).json()
         if not data['success']:
             raise Exception
         response = data['data']

@@ -35,10 +35,11 @@ class TestSerenity:
             ret = instance.authenticate()
             mock_post.assert_called_once_with(
                 DEV_URL + '/authenticate/anonymous',
-                headers={'Content-Type': CONTENT_TYPE},
-                data={
-                    'anonymousToken': test_token,
-                })
+                headers={
+                    'Content-Type': CONTENT_TYPE,
+                    'Authorization': 'Bearer {token}'.format(token=test_token)
+                },
+            )
         assert ret
         assert instance.security_token == 'FAKE SECURITY TOKEN'
         assert instance.authentication_ts is not None
@@ -99,10 +100,15 @@ class TestSerenity:
             # yapf: enable
             ret = instance.list_activities()
             mock_get.assert_called_once_with(
-                DEV_URL + '/v1/public/activityGroup/list/1/50/0',
-                headers={'Content-Type': CONTENT_TYPE},
-                data={
-                    'securityToken': security_token,
+                DEV_URL + '/v1/public/activityGroup/list',
+                headers={
+                    'Content-Type': CONTENT_TYPE,
+                    'Authorization': 'Bearer {token}'.format(token=test_token)
+                },
+                params={
+                    'page': 1,
+                    'limit': 50,
+                    'full': 0,
                 })
         # yapf: disable
         assert ret == {
@@ -133,10 +139,15 @@ class TestSerenity:
             }
             instance.list_activities(page=3, limit=10, full=True)
             mock_get.assert_called_once_with(
-                DEV_URL + '/v1/public/activityGroup/list/3/10/1',
-                headers={'Content-Type': CONTENT_TYPE},
-                data={
-                    'securityToken': security_token,
+                DEV_URL + '/v1/public/activityGroup/list',
+                headers={
+                    'Content-Type': CONTENT_TYPE,
+                    'Authorization': 'Bearer {token}'.format(token=test_token)
+                },
+                params={
+                    'page': 3,
+                    'limit': 10,
+                    'full': 1,
                 })
 
     def test_list_cities(self):
@@ -177,10 +188,15 @@ class TestSerenity:
             # yapf: enable
             ret = instance.list_cities()
             mock_get.assert_called_once_with(
-                DEV_URL + '/v1/public/city/list/1/50/0',
-                headers={'Content-Type': CONTENT_TYPE},
-                data={
-                    'securityToken': security_token,
+                DEV_URL + '/v1/public/city/list',
+                headers={
+                    'Content-Type': CONTENT_TYPE,
+                    'Authorization': 'Bearer {token}'.format(token=test_token)
+                },
+                params={
+                    'page': 1,
+                    'limit': 50,
+                    'full': 0,
                 })
         # yapf: disable
         assert ret == {
@@ -212,10 +228,15 @@ class TestSerenity:
             }
             instance.list_cities(page=3, limit=10, full=True)
             mock_get.assert_called_once_with(
-                DEV_URL + '/v1/public/city/list/3/10/1',
-                headers={'Content-Type': CONTENT_TYPE},
-                data={
-                    'securityToken': security_token,
+                DEV_URL + '/v1/public/city/list',
+                headers={
+                    'Content-Type': CONTENT_TYPE,
+                    'Authorization': 'Bearer {token}'.format(token=test_token)
+                },
+                params={
+                    'page': 3,
+                    'limit': 10,
+                    'full': 1,
                 })
 
     def test_search_cities(self):
@@ -255,10 +276,15 @@ class TestSerenity:
             # yapf: enable
             ret = instance.search_cities('aix')
             mock_get.assert_called_once_with(
-                DEV_URL + '/v1/public/city/getFromRegex/aix/0/50',
-                headers={'Content-Type': CONTENT_TYPE},
-                data={
-                    'securityToken': security_token,
+                DEV_URL + '/v1/public/city/getFromRegex',
+                headers={
+                    'Content-Type': CONTENT_TYPE,
+                    'Authorization': 'Bearer {token}'.format(token=test_token)
+                },
+                params={
+                    'keyword': 'aix',
+                    'full': 0,
+                    'limit': 50,
                 })
         # yapf: disable
         assert ret == {
@@ -287,8 +313,13 @@ class TestSerenity:
             }
             instance.search_cities('paris', limit=10, full=True)
             mock_get.assert_called_once_with(
-                DEV_URL + '/v1/public/city/getFromRegex/paris/1/10',
-                headers={'Content-Type': CONTENT_TYPE},
-                data={
-                    'securityToken': security_token,
+                DEV_URL + '/v1/public/city/getFromRegex',
+                headers={
+                    'Content-Type': CONTENT_TYPE,
+                    'Authorization': 'Bearer {token}'.format(token=test_token)
+                },
+                params={
+                    'keyword': 'paris',
+                    'full': 1,
+                    'limit': 10,
                 })
