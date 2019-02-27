@@ -1,5 +1,6 @@
 import requests
 from datetime import datetime, timedelta
+from serenity.utils import to_camel_case
 
 DEV_URL = 'http://api-dev.serenityhome.fr/'
 PROD_URL = 'https://api-dev.serenityhome.fr/'
@@ -91,3 +92,14 @@ class Serenity:
             raise Exception
         response = data['data']
         return response
+
+    def create_token(self, **kwargs):
+        self._check_authentication()
+        url = self.url + '/v1/public/funnel/insurer/project/update/token'
+        params = {to_camel_case(key): value for key, value in kwargs.items()}
+        data = requests.post(
+            url, headers=self._get_headers(), params=params).json()
+        if not data['success']:
+            raise Exception
+        token = data['data']['token']
+        return token

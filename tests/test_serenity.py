@@ -1,6 +1,7 @@
 import pytest
 from datetime import datetime, timedelta
 from serenity.serenity import Serenity, DEV_URL, PROD_URL, CONTENT_TYPE
+from serenity.utils import to_camel_case
 from unittest.mock import Mock, patch
 
 
@@ -323,3 +324,39 @@ class TestSerenity:
                     'full': 1,
                     'limit': 10,
                 })
+
+    def test_create_token(self):
+        test_token = 'test'
+        security_token = 'SECURITY TOKEN'
+        instance = Serenity(test_token)
+        instance.security_token = security_token
+        instance.authentication_ts = datetime.now()
+        with patch('requests.post') as mock_post:
+            mock_post.return_value = Mock(ok=True)
+            # yapf: disable
+            mock_post.return_value.json.return_value = {
+                'success': True,
+                'message': 'Data token successfully updated',
+                'data': {
+                    'token': {'fake': 'jwt'},
+                }
+            }
+            # yapf: enable
+            params = {
+                'insurer_email': 'fake@em.ail',
+                'selected_activity_groups': ['id1', 'id2'],
+                'insurer_phone_number': '+33688778877',
+            }
+            camel_cased_params = {
+                to_camel_case(key): value
+                for key, value in params.items()
+            }
+            ret = instance.create_token(**params)
+            mock_post.assert_called_once_with(
+                DEV_URL + '/v1/public/funnel/insurer/project/update/token',
+                headers={
+                    'Content-Type': CONTENT_TYPE,
+                    'Authorization': 'Bearer {token}'.format(token=test_token)
+                },
+                params=camel_cased_params)
+            assert ret == {'fake': 'jwt'}
