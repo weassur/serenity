@@ -2,8 +2,8 @@ import requests
 from datetime import datetime, timedelta
 from serenity.utils import to_camel_case
 
-DEV_URL = 'http://api-dev.serenityhome.fr/'
-PROD_URL = 'https://api.serenityhome.fr/'
+DEV_URL = 'http://api-dev.serenityhome.fr'
+PROD_URL = 'https://api.serenityhome.fr'
 
 CONTENT_TYPE = 'application/x-www-form-urlencoded'
 TOKEN_VALIDITY = timedelta(hours=3)
@@ -31,7 +31,10 @@ class Serenity:
             'Bearer {token}'.format(token=self.anonymous_token)
         }
         data = requests.post(
-            self.url + '/authenticate/anonymous', headers=headers).json()
+            self.url + '/authenticate/anonymous', headers=headers)
+        if data.status_code != 200:
+            raise Exception('api error')
+        data = data.json()
         if not data['success']:
             raise Exception(data.get('message'))
         self.security_token = data['token']
