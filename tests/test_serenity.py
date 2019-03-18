@@ -104,7 +104,8 @@ class TestSerenity:
                 DEV_URL + '/v1/public/activityGroup/list',
                 headers={
                     'Content-Type': CONTENT_TYPE,
-                    'Authorization': 'Bearer {token}'.format(token=test_token)
+                    'Authorization':
+                    'Bearer {token}'.format(token=security_token)
                 },
                 params={
                     'page': 1,
@@ -143,7 +144,8 @@ class TestSerenity:
                 DEV_URL + '/v1/public/activityGroup/list',
                 headers={
                     'Content-Type': CONTENT_TYPE,
-                    'Authorization': 'Bearer {token}'.format(token=test_token)
+                    'Authorization':
+                    'Bearer {token}'.format(token=security_token)
                 },
                 params={
                     'page': 3,
@@ -192,7 +194,8 @@ class TestSerenity:
                 DEV_URL + '/v1/public/city/list',
                 headers={
                     'Content-Type': CONTENT_TYPE,
-                    'Authorization': 'Bearer {token}'.format(token=test_token)
+                    'Authorization':
+                    'Bearer {token}'.format(token=security_token)
                 },
                 params={
                     'page': 1,
@@ -232,7 +235,8 @@ class TestSerenity:
                 DEV_URL + '/v1/public/city/list',
                 headers={
                     'Content-Type': CONTENT_TYPE,
-                    'Authorization': 'Bearer {token}'.format(token=test_token)
+                    'Authorization':
+                    'Bearer {token}'.format(token=security_token)
                 },
                 params={
                     'page': 3,
@@ -280,7 +284,8 @@ class TestSerenity:
                 DEV_URL + '/v1/public/city/getFromRegex',
                 headers={
                     'Content-Type': CONTENT_TYPE,
-                    'Authorization': 'Bearer {token}'.format(token=test_token)
+                    'Authorization':
+                    'Bearer {token}'.format(token=security_token)
                 },
                 params={
                     'keyword': 'aix',
@@ -317,7 +322,8 @@ class TestSerenity:
                 DEV_URL + '/v1/public/city/getFromRegex',
                 headers={
                     'Content-Type': CONTENT_TYPE,
-                    'Authorization': 'Bearer {token}'.format(token=test_token)
+                    'Authorization':
+                    'Bearer {token}'.format(token=security_token)
                 },
                 params={
                     'keyword': 'paris',
@@ -356,7 +362,8 @@ class TestSerenity:
                 DEV_URL + '/v1/public/funnel/insurer/project/update/token',
                 headers={
                     'Content-Type': CONTENT_TYPE,
-                    'Authorization': 'Bearer {token}'.format(token=test_token)
+                    'Authorization':
+                    'Bearer {token}'.format(token=security_token)
                 },
                 params=camel_cased_params)
             assert ret == 'fakejwt'
@@ -390,7 +397,8 @@ class TestSerenity:
                 DEV_URL + '/v1/public/funnel/insurer/project/save',
                 headers={
                     'Content-Type': CONTENT_TYPE,
-                    'Authorization': 'Bearer {token}'.format(token=test_token)
+                    'Authorization':
+                    'Bearer {token}'.format(token=security_token)
                 },
                 params=params)
             assert ret == {

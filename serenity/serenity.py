@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from serenity.utils import to_camel_case
 
 DEV_URL = 'http://api-dev.serenityhome.fr/'
-PROD_URL = 'https://api-dev.serenityhome.fr/'
+PROD_URL = 'https://api.serenityhome.fr/'
 
 CONTENT_TYPE = 'application/x-www-form-urlencoded'
 TOKEN_VALIDITY = timedelta(hours=3)
@@ -19,16 +19,19 @@ class Serenity:
     def _get_headers(self):
         return {
             'Content-Type': CONTENT_TYPE,
-            'Authorization':
-            'Bearer {token}'.format(token=self.anonymous_token)
+            'Authorization': 'Bearer {token}'.format(token=self.security_token)
         }
 
     def authenticate(self):
         if not self.anonymous_token:
             raise AttributeError
+        headers = {
+            'Content-Type': CONTENT_TYPE,
+            'Authorization':
+            'Bearer {token}'.format(token=self.anonymous_token)
+        }
         data = requests.post(
-            self.url + '/authenticate/anonymous',
-            headers=self._get_headers()).json()
+            self.url + '/authenticate/anonymous', headers=headers).json()
         if not data['success']:
             raise Exception(data.get('message'))
         self.security_token = data['token']
