@@ -27,6 +27,7 @@ class TestSerenity:
         instance = Serenity(test_token)
         with patch('requests.post') as mock_post:
             mock_post.return_value = Mock(ok=True)
+            mock_post.return_value.status_code = 200
             mock_post.return_value.json.return_value = {
                 'success': True,
                 'message': 'Authentication suceeded!',
@@ -49,6 +50,12 @@ class TestSerenity:
         instance.anonymous_token = None
         with pytest.raises(AttributeError):
             instance.authenticate()
+
+        with pytest.raises(Exception):
+            with patch('requests.post') as mock_post:
+                mock_post.return_value = Mock(ok=True)
+                mock_post.return_value.status_code = 404
+                instance.authenticate()
 
     def test_check_authentication(self):
         test_token = 'test'
