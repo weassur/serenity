@@ -355,16 +355,16 @@ class TestSerenity:
                 }
             }
             # yapf: enable
-            params = {
+            data = {
                 'insurer_email': 'fake@em.ail',
                 'selected_activity_groups': ['id1', 'id2'],
                 'insurer_phone_number': '+33688778877',
             }
-            camel_cased_params = {
+            camel_cased_data = {
                 to_camel_case(key): value
-                for key, value in params.items()
+                for key, value in data.items()
             }
-            ret = instance.create_token(**params)
+            ret = instance.create_token(**data)
             mock_post.assert_called_once_with(
                 DEV_URL + '/v1/public/funnel/insurer/project/update/token',
                 headers={
@@ -372,7 +372,7 @@ class TestSerenity:
                     'Authorization':
                     'Bearer {token}'.format(token=security_token)
                 },
-                params=camel_cased_params)
+                data=camel_cased_data)
             assert ret == 'fakejwt'
 
     def test_create_project(self):
@@ -398,7 +398,7 @@ class TestSerenity:
                 }
             }
             # yapf: enable
-            params = {'dataToken': fake_token}
+            data = {'dataToken': fake_token}
             ret = instance.create_project(fake_token)
             mock_post.assert_called_once_with(
                 DEV_URL + '/v1/public/funnel/insurer/project/save',
@@ -407,7 +407,7 @@ class TestSerenity:
                     'Authorization':
                     'Bearer {token}'.format(token=security_token)
                 },
-                params=params)
+                data=data)
             assert ret == {
                 'token': fake_token,
                 'project': {},
