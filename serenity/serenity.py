@@ -102,9 +102,9 @@ class Serenity:
     def create_token(self, **kwargs):
         self._check_authentication()
         url = self.url + '/v1/public/funnel/insurer/project/update/token'
-        params = {to_camel_case(key): value for key, value in kwargs.items()}
+        data = {to_camel_case(key): value for key, value in kwargs.items()}
         data = requests.post(
-            url, headers=self._get_headers(), params=params).json()
+            url, headers=self._get_headers(), data=data).json()
         if not data['success']:
             raise Exception(data.get('message'))
         token = data['data']['token']
@@ -117,11 +117,11 @@ class Serenity:
             )
         self._check_authentication()
         url = self.url + '/v1/public/funnel/insurer/project/save'
-        params = {
+        data = {
             'dataToken': token,
         }
         data = requests.post(
-            url, headers=self._get_headers(), params=params).json()
+            url, headers=self._get_headers(), data=data).json()
         if not data['success']:
             raise Exception(data.get('message'))
         response = data['data']
